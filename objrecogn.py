@@ -41,35 +41,16 @@ def loadModelsFromDirectory():
     #mientras que el valor es una lista con objetos del tipo ImageFeature
     #donde se almacenan todos los datos de las features de las imagenes de la
     #Base de datos.
-    dataBase = dict([('SIFT', []), ('AKAZE', []), ('SURF', []), 
-                     ('ORB', []), ('BRISK', [])])
-    #Se ha limitado el número de features a 250, para que el algoritmo vaya fluido.
-    sift = cv2.xfeatures2d.SIFT_create(nfeatures=250)
-    akaze = cv2.AKAZE_create()
-    surf = cv2.xfeatures2d.SURF_create(800)
-    orb = cv2.ORB_create(400)
-    brisk = cv2.BRISK_create()
-    for imageFile in os.listdir("modelos"):
+    dataBase = []
+    surf = cv2.xfeatures2d.SURF_create(400)
+    for imageFile in os.listdir("sample"):
         #Se carga la imagen con la OpenCV
-        colorImage = cv2.imread("modelos/" + str(imageFile))
+        colorImage = cv2.imread("sample/" + str(imageFile))
         #Pasamos la imagen a escala de grises
         currentImage = cv2.cvtColor(colorImage, cv2.COLOR_BGR2GRAY)
-        #Realizamos un resize de la imagen, para que la imagen comparada sea igual
-        kp, desc = sift.detectAndCompute(currentImage, None)
-        #Se cargan las features con SIFT
-        dataBase["SIFT"].append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
-        #Se cargan las features con AKAZE
-        kp, desc = akaze.detectAndCompute(currentImage, None)
-        dataBase["AKAZE"].append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
         #Se cargan las features con SURF
         kp, desc = surf.detectAndCompute(currentImage, None)
-        dataBase["SURF"].append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
-        #Se cargan las features con ORB
-        kp, desc = orb.detectAndCompute(currentImage, None)
-        dataBase["ORB"].append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
-         #Se cargan las features con BRISK
-        kp, desc = brisk.detectAndCompute(currentImage, None)
-        dataBase["BRISK"].append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
+        dataBase.append(ImageFeature(imageFile, currentImage.shape, colorImage, kp, desc))
     return dataBase
     
 #Función encargada de calcular los Matching mutuos, pero anidando bucles

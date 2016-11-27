@@ -19,13 +19,11 @@ if __name__ == '__main__':
         pass
     cv2.namedWindow('Features')
     cv2.namedWindow('ImageDetector')
-    #Selección del method para computar las features
-    cv2.createTrackbar('method', 'Features', 0, 4, nothing)
     #Error de reproyección para calcular los inliers con RANSAC
     cv2.createTrackbar('projer', 'Features', 5, 10, nothing)
     #Numero de inliers mínimo para indicar que se ha reconocido un objeto
     cv2.createTrackbar('inliers', 'Features', 20, 50, nothing)
-    #Trackbar para indicar si se pintan las features o no
+    #Vẽ các đường tròn đánh dấu các feature trong video
     cv2.createTrackbar('drawKP', 'Features', 0, 1, nothing)
 
     # Apertura de fuente de vídeo:
@@ -37,7 +35,6 @@ if __name__ == '__main__':
     paused = False
     methodstr = 'None'
 
-    #Cargamos la base de datos de los modelos
     dataBaseDictionary = orec.loadModelsFromDirectory()
     passKey = 0
     while True:
@@ -55,27 +52,8 @@ if __name__ == '__main__':
         	passKey = 0
         # Creación del detector de features, según método (sólo al principio):
         method = cv2.getTrackbarPos('method', 'Features')
-        #if method == 0:
-         #   if methodstr != 'SIFT':
-          #      methodstr = 'SIFT'
-           #     detector = cv2.xfeatures2d.SIFT_create(nfeatures=250)
-        #elif method == 1:
-         #   if methodstr != 'AKAZE':
-          #      methodstr = 'AKAZE'
-           #     detector = cv2.AKAZE_create()
-        #elif method == 2:
-         #   if methodstr != 'SURF':
         methodstr = 'SURF'
-        detector = cv2.xfeatures2d.SURF_create(800)
-        #elif method == 3:
-         #   if methodstr != 'ORB':
-          #      methodstr = 'ORB'
-           #     detector = cv2.ORB_create(400)
-        #elif method == 4:
-         #   if methodstr != 'BRISK':
-          #      detector = cv2.BRISK_create()
-           #     methodstr = 'BRISK'
-                
+        detector = cv2.xfeatures2d.SURF_create(400)
         # Pasamos imagen de entrada a grises:
         imgin = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Se calcula la imagen de salida
@@ -83,7 +61,10 @@ if __name__ == '__main__':
         # Detectamos features, y medimos tiempo:
         t1 = time.time()
         kp, desc = detector.detectAndCompute(imgin, None)
-        selectedDataBase = dataBaseDictionary[methodstr]
+        selectedDataBase = dataBaseDictionary
+        if desc == None:
+            cv2.imshow('Features', imgout)
+            continue
         if len(selectedDataBase) > 0:
             #Realizamos el matching mutuo
             imgsMatchingMutuos = orec.findMatchingMutuosOptimizado(selectedDataBase, desc, kp)    
