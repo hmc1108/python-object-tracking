@@ -8,7 +8,7 @@ Utilidades varias para usar con OpenCV
 import cv2
 
 
-# Función auxiliar para dibujar texto con contraste en una imagen:
+# Auxiliary function to draw text with contrast in an image:
 def draw_str(dst, (x, y), s):
     cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0),
                 thickness=2, lineType=cv2.LINE_AA)
@@ -16,7 +16,7 @@ def draw_str(dst, (x, y), s):
                 lineType=cv2.LINE_AA)
 
 
-# Función auxiliar para recortar un ROI sobre una imagen de tamaño dado:
+# Auxiliary function to trim an ROI over an image of given size:
 def fixroi(roi, imshape):
     if roi == ((-1, -1), (-1, -1)):
         rroi = ((0, 0), (imshape[1], imshape[0]))
@@ -28,11 +28,11 @@ def fixroi(roi, imshape):
     return rroi
 
 
-# Obtener la subimagen dada por un ROI:
+# Obtain the sub image given by an ROI:
 def subimg(pimg, proi):
     return pimg[proi[0][1]:proi[1][1], proi[0][0]:proi[1][0]]
 
 
-# Escribir la subimagen dada por un ROI:
+# Write the sub image given by an ROI:
 def setsubimg(img1, img2, proi):
     img1[proi[0][1]:proi[1][1], proi[0][0]:proi[1][0]] = img2

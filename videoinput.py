@@ -1,55 +1,48 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
-Sencilla clase de lectura genérica de secuencias de imágenes de entrada.
-Puede leer de una sóla imagen de un archivo, o bien de una secuencia de éstas,
-o bien de un vídeo, o finalmente de una cámara. Se pueden especificar todos
-estos tipos de fuentes en la cadena de inicialización, así como un reescalado
-deseado (rows x cols), o si se desea que la fuente de imágenes cicle (vuelva
-al comienzo) al terminar, o bien directamente termine (en cuyo caso el método
-read simplemente devolverá None).
+It can read from a single image, or a sequence of them,
+or a video, or finally a camera. You can specify all
+these types of sources in the initialization string, as well as a rescaling
+(rows x cols), or if you want the image source to cycle (return
+at the end), or directly terminate (in which case the method
+Read will simply return None).
 
-Nota 1: Si los parámetros de inicialización no se ponen (o bien se ponen, pero
-explícitamente se hacen cero) entonces la imagen de entrada no se escala, y
-se proporciona según su tamaño original.
+Note 1: If the initialization parameters are not set (or are set, but 0) 
+then the input image is not scaled, and
+Is provided according to its original size.
 
-Nota 2: La implementación prioriza la sencillez y legibilidad del código, de
-manera que apenas se realiza control de errores.
+Note 2:
 
-Ejemplos posibles de cadenas válidas de inicialización:
+Possible examples of valid initialization strings:
 
-Lectura de archivo de vídeo sin escalar, y repitiendo al acabar (bucle):
+Read non-scaled video file, and repeat at end (loop):
 "/path/to/file.mp4:loop"
 
-Equivalente al anterior:
+Equivalent to the previous one:
 "/path/to/file.mp4:rows=0:cols=0:loop"
 
-Similar, pero con otro tipo de contenedor (se soporta casi cualquier tipo de
-vídeo):
+Similar, but with another type of container (supports almost any type of
+video):
 "/path/to/file.avi"
 
-Lectura de secuencia de imágenes escalando sólo la anchura, y bucle al acabar:
+Reading sequence of images by scaling only the width, and loop when finishing:
 "/path/to/img-???.jpg:rows=0:cols=200:loop"
 
-Lectura de una sola imagen, escalada. Si se intenta una segunda lectura,
-devolverá None (al no haber bucle):
+Reading a single image. If a second reading is attempted,
+will return None (as there is no loop):
 "/path/to/img-001.jpg:rows=300:cols=400"
 
-Lectura de secuencia de imágenes, cada una a su tamaño original, y sin bucle
-(al acabarse las mismas el método read devolverá None):
+Reading sequence of images, each to its original size, and without loop
+(When finished, the read method will return None):
 "/path/to/img-*.jpg"
 
-Lectura de la cámara numerada como 0:
+Numbered camera reading as 0:
 "0"
 
-Lectura de la cámara numerada como 1, con reescalado:
-"1:rows=100:cols=200"
+Camera reading numbered as 1, with rescaling:
+"1: rows = 100: cols = 200"
 
-
-Para ver ejemplo de utilización, consultar el programa ejemplosimple.py:
-Uso:
-  ./ejemplosimple.py [<fuente de video>]
 '''
 import glob
 import cv2

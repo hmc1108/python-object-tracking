@@ -1,110 +1,105 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Paquetes estándar utilizados:
 import sys
 import cv2
 import time
 
-# Paquetes propios:
 import videoinput
 import utilscv
 import objrecogn as orec
 
-# Programa principal:
 if __name__ == '__main__':
 
-    # Creación de ventana y sliders asociados, y callback del ratón:
+    # Creating window and associated sliders, and mouse callback
     def nothing(*arg):
         pass
     cv2.namedWindow('Features')
     cv2.namedWindow('ImageDetector')
-    #Error de reproyección para calcular los inliers con RANSAC
+
+    # Reprojection error to calculating inliers with RANSAC
     cv2.createTrackbar('projer', 'Features', 5, 10, nothing)
-    #Numero de inliers mínimo para indicar que se ha reconocido un objeto
+    # Number of minimum inliers to indicate that an object has been recognized
     cv2.createTrackbar('inliers', 'Features', 20, 50, nothing)
-    #Vẽ các đường tròn đánh dấu các feature trong video
+    # Draw keypoints in frame extracted from video
     cv2.createTrackbar('drawKP', 'Features', 0, 1, nothing)
 
-    # Apertura de fuente de vídeo:
+    # Video source opening
     if len(sys.argv) > 1:
         strsource = sys.argv[1]
     else:
-        strsource = '0:rows=300:cols=400'  # Simple apertura de la cámara cero, sin escalado
+        strsource = '0:rows=300:cols=400'  # Simple aperture of webcam, no scaling
     videoinput = videoinput.VideoInput(strsource)
     paused = False
     methodstr = 'None'
 
     dataBaseDictionary = orec.loadModelsFromDirectory()
-    passKey = 0
+    passKey = 0 # for processing only odd frame
     while True:
-        # Lectura frame de entrada, y parámetros del interfaz:
+        # Reading input frame, and interface parameters
         if not paused:
             frame = videoinput.read()
+
         if frame is None:
             print('End of video input')
             break
+
         if passKey == 0:
         	cv2.imshow('Features', frame)
         	passKey = 1
         	continue
         else:
         	passKey = 0
-        # Creación del detector de features, según método (sólo al principio):
-        method = cv2.getTrackbarPos('method', 'Features')
-        methodstr = 'SURF'
+
         detector = cv2.xfeatures2d.SURF_create(400)
-        # Pasamos imagen de entrada a grises:
+        # Make GRAY frame
         imgin = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Se calcula la imagen de salida
+        # The output frame
         imgout = frame.copy()
-        # Detectamos features, y medimos tiempo:
+        # Detect features, measure time
         t1 = time.time()
         kp, desc = detector.detectAndCompute(imgin, None)
-        selectedDataBase = dataBaseDictionary
-        if desc == None:
+        if desc is None:
             cv2.imshow('Features', imgout)
             continue
-        if len(selectedDataBase) > 0:
-            #Realizamos el matching mutuo
-            imgsMatchingMutuos = orec.findMatchingMutuosOptimizado(selectedDataBase, desc, kp)    
+        if len(dataBaseDictionary) > 0:
+            #Perform mutual matching
+            imgsMatchingMutual = orec.findMatchingMutualOptimize(dataBaseDictionary, desc, kp)    
             minInliers = int(cv2.getTrackbarPos('inliers', 'Features'))
             projer = float(cv2.getTrackbarPos('projer', 'Features'))
-            #Se calcula la mejor imagen en función del numero de inliers. 
-            #La mejor imagen es aquella que tiene más número de inliers, pero siempre
-            #superando el mínimo que se indica en el trackbar 'minInliers'
-            bestImage, inliersWebCam, inliersDataBase =  orec.calculateBestImageByNumInliers(selectedDataBase, projer, minInliers)            
+            # The best image is calculated based on the number of inliers.
+            # The best image is one that has more number of inliers, but always
+            # exceeding the minimum indicated in the trackbar 'minInliers'
+            bestImage, inliersWebCam, inliersDataBase =  orec.calculateBestImageByNumInliers(dataBaseDictionary, projer, minInliers)            
             if not bestImage is None:
-                #Si encontramos una buena imagen, se calcula la matriz de afinidad y se pinta en pantalla el objeto reconocido.
+                #If we find a good image, we calculate the affinity matrix and draw the recognized object on the screen.
                orec.calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout)
                
-        t1 = 1000 * (time.time() - t1)  # Tiempo en milisegundos
-        # Obtener dimensión de descriptores de cada feature:
+        t1 = 1000 * (time.time() - t1)  # Time in milliseconds
+        # Get dimension of descriptors for each feature:
         if desc is not None:
             if len(desc) > 0:
                 dim = len(desc[0])
             else:
                 dim = -1
-        # Dibujamos features, y escribimos texto informativo sobre la imagen
-        # Solo se dibuban las features si el slider lo indica
+        # Draw features, and write informative text about the image
         if (int(cv2.getTrackbarPos('drawKP', 'Features')) > 0):
             cv2.drawKeypoints(imgout, kp, imgout,
                               flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         utilscv.draw_str(imgout, (20, 20),
-                         "Method {0}, {1} features found, desc. dim. = {2} ".
-                         format(methodstr, len(kp), dim))
+                         "{0} features found, desc. dim. = {1} ".
+                         format(len(kp), dim))
         utilscv.draw_str(imgout, (20, 40), "Time (ms): {0}".format(str(t1)))
-        # Mostrar resultados y comprobar teclas:
+        # Show results and check keys:
         cv2.imshow('Features', imgout)
         ch = cv2.waitKey(5) & 0xFF
-        if ch == 27:  # Escape termina
+        if ch == 27:  #End when press 'Escape'
             break
-        elif ch == ord(' '):  # Barra espaciadora pausa
+        elif ch == ord(' '):  # Pause when press 'Spacebar'
             paused = not paused
-        elif ch == ord('.'):  # Punto avanza un sólo frame
+        elif ch == ord('.'):  # Point advances single frame
             paused = True
             frame = videoinput.read()
 
-    # Cerrar ventana(s) y fuente(s) de vídeo:
+    # Close window (s) and video source (s):
     videoinput.close()
     cv2.destroyAllWindows()
