@@ -43,14 +43,16 @@ if __name__ == '__main__':
             print('End of video input')
             break
 
-        if passKey == 0:
-        	cv2.imshow('Features', frame)
-        	passKey = 1
-        	continue
+        if passKey != 3:
+            cv2.imshow('Features', frame)
+            passKey += 1
+            continue
         else:
-        	passKey = 0
+            passKey = 0
 
-        detector = cv2.xfeatures2d.SURF_create(400)
+
+
+        detector = cv2.xfeatures2d.SURF_create(800)
         # Make GRAY frame
         imgin = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # The output frame
@@ -63,16 +65,16 @@ if __name__ == '__main__':
             continue
         if len(dataBaseDictionary) > 0:
             #Perform mutual matching
-            imgsMatchingMutual = orec.findMatchingMutualOptimize(dataBaseDictionary, desc, kp)    
+            imgsMatchingMutual = orec.findMatchingMutualOptimize(dataBaseDictionary, desc, kp)
             minInliers = int(cv2.getTrackbarPos('inliers', 'Features'))
             projer = float(cv2.getTrackbarPos('projer', 'Features'))
             # The best image is calculated based on the number of inliers.
             # The best image is one that has more number of inliers, but always
             # exceeding the minimum indicated in the trackbar 'minInliers'
-            bestImage, inliersWebCam, inliersDataBase =  orec.calculateBestImageByNumInliers(dataBaseDictionary, projer, minInliers)            
+            bestImage, inliersWebCam, inliersDataBase = orec.calculateBestImageByNumInliers(dataBaseDictionary, projer, minInliers)
             if not bestImage is None:
                 #If we find a good image, we calculate the affinity matrix and draw the recognized object on the screen.
-               orec.calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout)
+                orec.calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout)
                
         t1 = 1000 * (time.time() - t1)  # Time in milliseconds
         # Get dimension of descriptors for each feature:

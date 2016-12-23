@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import cv2
 import os
 import numpy as np
 import utilscv
+from numba import jit
 
 # This class will contain for each of the images in the 'sample' folder,
 # information needed to compute object recognition.
@@ -36,7 +36,7 @@ def loadModelsFromDirectory():
     # The method return the list of objects typed ImageFeature, 
     # contain all data of the features of images in folder
     dataBase = []
-    surf = cv2.xfeatures2d.SURF_create(400)
+    surf = cv2.xfeatures2d.SURF_create(800)
     for imageFile in os.listdir("sample"):
         #Read image
         colorImage = cv2.imread("sample/" + str(imageFile))
@@ -50,6 +50,7 @@ def loadModelsFromDirectory():
 # Function is responsible for calculating mutual matching, but nesting loops
 # It is a very slow solution because it does not take advantage of Numpy library
 # we do not even put a slider to use this method as it is very slow
+@jit
 def findMatchingMutual(selectedDataBase, desc, kp):
     for imgFeatures in selectedDataBase:
         imgFeatures.clearMatchingMutual()
@@ -75,6 +76,7 @@ def findMatchingMutual(selectedDataBase, desc, kp):
 
 # Function is responsible for calculating the mutual matching of a webcam image,
 # with all the  images in the database.
+@jit
 def findMatchingMutualOptimize(selectedDataBase, desc, kp):
     #The algorithm is repeated for each image in the database.
     for img in selectedDataBase:
@@ -103,6 +105,7 @@ def findMatchingMutualOptimize(selectedDataBase, desc, kp):
 
 # This function calculates the best image based on the number of inliers
 # that each image in the database has with the image obtained from the webcam
+@ jit
 def calculateBestImageByNumInliers(selectedDataBase, projer, minInliers):
     if minInliers < 15:
         minInliers = 15
