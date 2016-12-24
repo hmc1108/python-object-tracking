@@ -33,7 +33,7 @@ if __name__ == '__main__':
     methodstr = 'None'
 
     dataBaseDictionary = orec.loadModelsFromDirectory()
-    passKey = 0 # for processing only odd frame
+    passKey = 0 # for pass several frames
     while True:
         # Reading input frame, and interface parameters
         if not paused:
