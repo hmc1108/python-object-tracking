@@ -34,6 +34,8 @@ if __name__ == '__main__':
 
     dataBaseDictionary = orec.loadModelsFromDirectory()
     passKey = 0 # for pass several frames
+    center_points = []
+    current_index = None
     while True:
         # Reading input frame, and interface parameters
         if not paused:
@@ -71,10 +73,13 @@ if __name__ == '__main__':
             # The best image is calculated based on the number of inliers.
             # The best image is one that has more number of inliers, but always
             # exceeding the minimum indicated in the trackbar 'minInliers'
-            bestImage, inliersWebCam, inliersDataBase = orec.calculateBestImageByNumInliers(dataBaseDictionary, projer, minInliers)
+            bestImage, inliersWebCam, inliersDataBase, best_index = orec.calculateBestImageByNumInliers(dataBaseDictionary, projer, minInliers)
             if not bestImage is None:
+                if best_index != current_index:
+                    center_points = []
+                    current_index = best_index
                 #If we find a good image, we calculate the affinity matrix and draw the recognized object on the screen.
-                orec.calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout)
+                orec.calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout, center_points)
                
         t1 = 1000 * (time.time() - t1)  # Time in milliseconds
         # Get dimension of descriptors for each feature:

@@ -133,13 +133,13 @@ def calculateBestImageByNumInliers(selectedDataBase, projer, minInliers):
         bestImage = selectedDataBase[bestIndex]
         inliersWebCam = bestImage.matchingWebcam[bestMask]
         inliersDataBase = bestImage.matchingDatabase[bestMask]
-        return bestImage, inliersWebCam, inliersDataBase
-    return None, None, None
+        return bestImage, inliersWebCam, inliersDataBase, bestIndex
+    return None, None, None, None
                 
 # This function calculates the affinity matrix A, paints a rectangle around
 # detected object and paints in a new window the image of the database
 # corresponding to the recognized object.
-def calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout):
+def calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, imgout, center_points):
     #The affinity matrix A is calculated
     A = cv2.estimateRigidTransform(inliersDataBase, inliersWebCam, fullAffine=True)
     A = np.vstack((A, [0, 0, 1]))
@@ -169,7 +169,12 @@ def calculateAffinityMatrixAndDraw(bestImage, inliersDataBase, inliersWebCam, im
     
     #Draw the polygon and the file name of the image in the center of the polygon
     points = np.array([areal, breal, creal, dreal], np.int32)
-    cv2.polylines(imgout, np.int32([points]),1, (255,255,255), thickness=2)
+    cv2.polylines(imgout, np.int32([points]), 1, (255, 255, 255), thickness=2)
+    center_points.append(centrereal)
+    if len(center_points) >= 2:
+        centerpoints = np.array(center_points, np.int32)
+        cv2.polylines(imgout, np.int32([centerpoints]), 0, (255, 0, 0), thickness=2)
+
     utilscv.draw_str(imgout, centrereal, bestImage.nameFile.upper())
     #The detected object is displayed in a separate window
     cv2.imshow('ImageDetector', bestImage.imageBinary)
